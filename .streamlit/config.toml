@@ -1,0 +1,7 @@
+# Streamlit defaults server.maxUploadSize to 200MB, which is a Streamlit
+# upload-widget limit, not anything to do with ADOE's own engine (which is
+# streaming-first and has no inherent file-size limit - the CLI reads
+# straight off disk with no cap at all). Raised here so the GUI's uploader
+# isn't the bottleneck for anyone testing with realistically large files.
+[server]
+maxUploadSize = 2048

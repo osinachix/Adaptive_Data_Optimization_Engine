@@ -262,6 +262,13 @@ This opens a browser tab (defaults to `http://localhost:8501`) with a single pag
 Excel input is read-only today (there's no Excel writer yet): an uploaded `.xlsx` is
 optimized and offered back as Parquet instead, with a note in the UI explaining why.
 
+The upload widget caps at 2048MB (2GB) per file, set via
+[`.streamlit/config.toml`](.streamlit/config.toml). That's a Streamlit upload-widget
+setting, not an engine limit: uploaded bytes have to pass through the browser upload
+itself, so the GUI can't be truly unbounded the way the CLI is (which streams straight
+off disk with no size cap at all). Raise `server.maxUploadSize` in that file if 2GB
+isn't enough for your use case.
+
 The GUI is a second door into the same engine the CLI uses, not a separate
 implementation: it calls `run_profile`/`run_optimize` from `engine/pipeline.py`
 directly and contains no profiling, optimization, or validation logic of its own (see
