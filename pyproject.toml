@@ -78,6 +78,17 @@ module = "pyarrow.*"
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
+# Because pyarrow ships no stubs, strict mode's disallow_untyped_calls also
+# flags every call into it (ParquetFile, ParquetWriter, iter_batches,
+# write_table, close) as "call to untyped function", separately from the
+# missing-imports override above. These are the only modules that call
+# pyarrow directly, and every untyped-call error in them is one of those
+# calls - confirmed via a full mypy run - so this is scoped to exactly the
+# modules that need it, not a project-wide relaxation.
+module = ["core.readers.parquet_reader", "engine.exporter", "test_exporter"]
+disallow_untyped_calls = false
+
+[[tool.mypy.overrides]]
 # openpyxl ships no py.typed marker / stubs either (same reason as pyarrow
 # above).
 module = "openpyxl.*"

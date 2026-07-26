@@ -7,7 +7,10 @@ def test_build_default_registry_registers_both_shipped_optimizers() -> None:
     registry = build_default_registry()
 
     names = {optimizer.name for optimizer in registry.all()}
-    assert names == {NumericDowncastOptimizer().name, DictionaryEncodingOptimizer().name}
+    assert names == {
+        NumericDowncastOptimizer().name,
+        DictionaryEncodingOptimizer().name,
+    }
 
 
 def test_build_default_registry_returns_a_fresh_registry_each_call() -> None:

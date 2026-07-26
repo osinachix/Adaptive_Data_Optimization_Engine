@@ -53,6 +53,7 @@ Thumbs.db
 # Benchmark / example run artifacts
 benchmarks/output/
 benchmarks/datasets/
+benchmarks/baseline_results.json
 examples/output/
 
 # Real-world sample dataset and its derived outputs (personal test data,

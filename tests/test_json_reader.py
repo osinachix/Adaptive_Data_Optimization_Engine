@@ -7,7 +7,7 @@ from core.chunk_manager import ChunkManager
 from core.mode import OptimizationMode
 from core.readers.json_reader import JSONReader
 from core.types import Chunk, Schema
-from engine.exporter import ExportFormat, Exporter
+from engine.exporter import Exporter, ExportFormat
 
 EXPECTED_SCHEMA = Schema(columns={"id": pl.Int64(), "name": pl.String()})
 
@@ -114,7 +114,10 @@ def test_reads_back_adoe_exported_ndjson_round_trip(tmp_path: Path) -> None:
     )
     output_path = tmp_path / "out.json"
     Exporter().export(
-        iter([chunk]), iter([chunk]), OptimizationMode.LOSSLESS, output_path,
+        iter([chunk]),
+        iter([chunk]),
+        OptimizationMode.LOSSLESS,
+        output_path,
         ExportFormat.JSON,
     )
 

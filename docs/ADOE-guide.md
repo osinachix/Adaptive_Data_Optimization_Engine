@@ -364,6 +364,17 @@ predictable precedence.
 Structured logs capture execution IDs, dataset metadata, optimizer activity, timing,
 memory usage, warnings and errors.
 
+### Web GUI
+
+A Streamlit application (`gui/app.py`) is the second interface: upload a file, pick a
+mode, optimize, view the profile and report, download the result. It calls
+`engine.pipeline.run_profile`/`run_optimize` directly, the same functions the CLI calls,
+so it carries no profiling, optimization, or validation logic of its own. Run it with
+`poetry run streamlit run gui/app.py`; see the README's "Run the web app" section for
+the full walkthrough. One current asymmetry: the engine can read `.xlsx` (via a
+streaming, read-only `openpyxl` reader) but has no Excel writer, so an uploaded Excel
+file is optimized and offered back as Parquet instead.
+
 ### Future API
 
 A REST API may follow version 1.0. The initial implementation keeps the core engine
@@ -435,11 +446,16 @@ criteria are all satisfied.
 
 ## 12. Future Enhancements
 
-Beyond a stable version 1.0, ADOE can grow while keeping its architecture modular.
+Beyond a stable version 1.0, ADOE can grow while keeping its architecture modular. The
+web GUI (Streamlit) has already shipped — see section 9 — so it's no longer future
+work; what remains:
 
-REST API · web dashboard · distributed execution · Spark integration · Ray integration ·
-additional optimizer plugins · AI-assisted optimization recommendations · cloud-storage
-connectors · plugin marketplace.
+REST API · additional optimizer plugins (boolean, string, sparse, duplicate, datetime -
+five of the seven originally planned optimizers, beyond `numeric_downcast` and
+`dictionary_encoding`, which already ship) · an Excel writer (reading is already
+implemented; there is no export path yet) · distributed execution · Spark integration ·
+Ray integration · AI-assisted optimization recommendations · cloud-storage connectors ·
+plugin marketplace · a PyPI release.
 
 **Guiding principle:** enhancements must extend the platform without compromising the
 streaming-first architecture, the modular design, or the open-source foundation. Future

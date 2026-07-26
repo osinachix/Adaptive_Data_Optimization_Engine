@@ -69,10 +69,35 @@ Reader → Chunk Manager → Profiler → Schema Analyzer → Optimization Plann
 
 Full architecture and per-component detail: [`docs/ADOE-guide.md`](docs/ADOE-guide.md).
 
-## Technology
+## Requirements & dependencies
 
-Python 3.12+ · Polars · PyArrow · DuckDB · Typer (CLI) · Streamlit (web app) · Pydantic
-Settings · Structlog · Zstandard · Pytest · Ruff · Black · MyPy · Poetry.
+- **Python 3.12 or newer** (`requires-python = ">=3.12,<4.0"` in `pyproject.toml`).
+  Developed and verified on Windows; nothing in the codebase is OS-specific (paths go
+  through `pathlib.Path` throughout), so Linux/macOS are expected to work but haven't
+  been explicitly verified by this project yet.
+- **Poetry** for dependency management and packaging (installation instructions:
+  [python-poetry.org](https://python-poetry.org/docs/#installation)).
+- **pipx**, only if you want the end-user install path below rather than a source
+  checkout ([pipx.pypa.io](https://pipx.pypa.io/stable/installation/)).
+
+Runtime dependencies (installed automatically by `poetry install`; every one of these
+is required today, including for CLI-only use — there is currently no optional/"GUI
+extras" split, so `streamlit`/`openpyxl` install even if you only ever use the CLI):
+
+| Package | Used for |
+|---|---|
+| `polars` | The dataframe engine: streaming reads, dtype casts, all in-memory data handling |
+| `pyarrow` | Parquet reading/writing (row-group streaming) |
+| `duckdb` | Declared as part of the data-processing stack; **not actually used by any code path yet** — reserved, not dead weight by design, but honestly unused today |
+| `typer` | The CLI framework |
+| `streamlit` | The web GUI |
+| `openpyxl` | Streaming (read-only) `.xlsx` reading, via its `read_only` row iterator |
+| `pydantic-settings` | Centralized config (flags > env vars > `adoe.toml` > defaults) |
+| `structlog` | Structured (JSON) logging throughout the engine and CLI |
+| `zstandard` | Optional output compression (`--compress`) |
+
+Development-only dependencies (installed by `poetry install`, used for testing/quality
+checks, not needed to just run `adoe` or the GUI): `pytest`, `ruff`, `black`, `mypy`.
 
 ---
 
@@ -189,7 +214,35 @@ Peak memory (CLI): 0.86 MB
 Every command accepts `--rows-per-chunk`, `--log-level`, and (`optimize`/`validate`)
 `--mode`; run `adoe <command> --help` for the full option list. Configuration falls back
 to `ADOE_*` environment variables and an `adoe.toml` file when a flag is omitted; see
-[`docs/ADOE-guide.md`](docs/ADOE-guide.md) for precedence details.
+below for the exact precedence and format.
+
+The CLI isn't limited to CSV input either, despite every example above using it: `adoe
+profile`/`adoe optimize` accept CSV, Parquet, NDJSON (`.json`/`.jsonl`), or Excel
+(`.xlsx`) directly, the same formats the GUI accepts — e.g. `adoe profile
+data.parquet` or `adoe profile data.xlsx` work exactly like `adoe profile data.csv`.
+One asymmetry to know about: there's no Excel *writer*, so `adoe optimize input.xlsx
+--out output.xlsx` fails with "cannot infer export format" — point `--out` at
+`.csv`/`.parquet`/`.json` instead when the input is Excel.
+
+## Configuration
+
+Three sources, resolved in this order (highest priority first) — an explicit CLI flag
+always wins, an omitted flag falls through:
+
+1. **CLI flags** you actually pass (e.g. `--mode balanced`).
+2. **Environment variables**, prefixed `ADOE_`: `ADOE_MODE`, `ADOE_ROWS_PER_CHUNK`,
+   `ADOE_LOG_LEVEL`.
+3. **`adoe.toml`** in the current directory:
+   ```toml
+   mode = "balanced"
+   rows_per_chunk = 5000
+   log_level = "DEBUG"
+   ```
+4. Built-in defaults (`lossless`, `10000`, `INFO`) if nothing else is set.
+
+All three fields are optional in `adoe.toml`/the environment — set only the ones you
+want to override. This precedence is verified directly in
+[`tests/test_settings.py`](tests/test_settings.py), not just described here.
 
 ## Run the web app
 
@@ -214,6 +267,35 @@ implementation: it calls `run_profile`/`run_optimize` from `engine/pipeline.py`
 directly and contains no profiling, optimization, or validation logic of its own (see
 invariant I6 in [`CLAUDE.md`](CLAUDE.md)) — so a result optimized through the browser is
 identical to the same file run through `adoe optimize`.
+
+---
+
+## Sample data
+
+Everything above uses [`examples/sample_orders.csv`](examples/sample_orders.csv) (a
+generated 50,000-row order log), but [`examples/sample_data/`](examples/sample_data/)
+has more, each built to exercise something specific:
+
+| File | Purpose |
+|---|---|
+| `core_dataset.csv` / `.jsonl` / `.parquet` | The same 2,000-row dataset in three formats — try `adoe profile` on each to compare how format affects what's detectable (e.g. NDJSON round-trips `signup_at` as a string; Parquet keeps it as a real datetime) |
+| `already_optimal.csv` | Nothing here should show meaningful savings — confirms the planner doesn't force a change just to report one |
+| `wide_table.csv` | Many columns, a mix of optimizable and not |
+| `missing_and_malformed.csv` | A ragged row (wrong field count) — confirms `adoe profile`/`optimize` fail with a clear, actionable error instead of a raw traceback |
+
+Regenerate all of them deterministically (fixed random seeds, byte-identical output
+every run):
+
+```bash
+poetry run python examples/make_samples.py
+```
+
+`examples/real_data.csv` and its derived `real_data_optimized*` files, if present in
+your working copy, are **not** part of this repository (excluded via `.gitignore`) —
+they're a real-world dataset a user of this project downloaded separately for testing
+at real scale (~200MB, exceeds GitHub's 100MB file limit anyway). A fresh clone won't
+have them; supply your own large CSV/Parquet/JSON/Excel file at that path to reproduce
+that kind of test.
 
 ---
 
@@ -247,7 +329,42 @@ adoe/
 ├── tests/        unit, integration, regression, performance
 ├── benchmarks/   benchmark datasets and harness
 ├── docs/         architecture guide
-└── examples/     runnable usage examples (sample_orders.csv)
+└── examples/     runnable usage examples (see "Sample data" above)
+```
+
+---
+
+## Development
+
+Everything below assumes `poetry install` has already been run.
+
+Run the full test suite:
+
+```bash
+poetry run pytest
+```
+
+`203 passed, 2 skipped` is the expected baseline (the 2 skips are slow stress tests,
+opt-in only):
+
+```bash
+poetry run pytest --run-stress
+```
+
+Lint, format-check, and type-check (all three must be clean before a commit, per
+[`CLAUDE.md`](CLAUDE.md)):
+
+```bash
+poetry run ruff check .
+poetry run black --check .
+poetry run mypy .
+```
+
+Run the benchmark harness (execution time, peak memory, size reduction, throughput,
+and validation success rate across small/medium/large synthetic datasets):
+
+```bash
+poetry run python benchmarks/harness.py
 ```
 
 ---
