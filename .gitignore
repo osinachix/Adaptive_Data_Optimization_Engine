@@ -1,0 +1,62 @@
+# Byte-compiled / optimized files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Poetry
+poetry.toml
+
+# Testing / coverage
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+
+# Type checking / linting caches
+.mypy_cache/
+.ruff_cache/
+.dmypy.json
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Editors / IDEs
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Benchmark / example run artifacts
+benchmarks/output/
+benchmarks/datasets/
+examples/output/
+
+# Real-world sample dataset and its derived outputs (personal test data,
+# not source; the raw file and two of its derived outputs exceed GitHub's
+# 100MB per-file limit). Reproducible by downloading your own dataset to
+# examples/real_data.csv and following the README's optimize commands.
+examples/real_data*

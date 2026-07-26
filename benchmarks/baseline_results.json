@@ -1,0 +1,35 @@
+[
+  {
+    "name": "small",
+    "row_count": 10000,
+    "elapsed_seconds": 0.741,
+    "peak_memory_bytes": 797306,
+    "input_file_bytes": 249193,
+    "output_file_bytes": 79972,
+    "size_reduction_percent": 67.91,
+    "rows_per_second": 13495.3,
+    "validation_passed": true
+  },
+  {
+    "name": "medium",
+    "row_count": 200000,
+    "elapsed_seconds": 14.04,
+    "peak_memory_bytes": 795449,
+    "input_file_bytes": 5298789,
+    "output_file_bytes": 1580567,
+    "size_reduction_percent": 70.17,
+    "rows_per_second": 14245.0,
+    "validation_passed": true
+  },
+  {
+    "name": "large",
+    "row_count": 1000000,
+    "elapsed_seconds": 72.807,
+    "peak_memory_bytes": 793069,
+    "input_file_bytes": 26938560,
+    "output_file_bytes": 7899409,
+    "size_reduction_percent": 70.68,
+    "rows_per_second": 13734.9,
+    "validation_passed": true
+  }
+]

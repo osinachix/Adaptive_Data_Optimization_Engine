@@ -1,0 +1,84 @@
+[project]
+name = "adoe"
+version = "0.1.0"
+description = "A streaming-first engine that profiles structured datasets and applies safe, explainable optimizations to reduce storage and memory footprint, lossless by default."
+authors = [
+    {name = "Osinachi Mbakamma",email = "osinachimbakamma@gmail.com"}
+]
+license = "MIT"
+readme = "README.md"
+requires-python = ">=3.12,<4.0"
+dependencies = [
+    "polars (>=1.43.0,<2.0.0)",
+    "pyarrow (>=15.0.0,<26.0.0)",
+    "duckdb (>=1.5.5,<2.0.0)",
+    "typer (>=0.27.0,<0.28.0)",
+    "pydantic-settings (>=2.14.2,<3.0.0)",
+    "structlog (>=26.1.0,<27.0.0)",
+    "zstandard (>=0.25.0,<0.26.0)",
+    "streamlit (>=1.60.0,<2.0.0)",
+    "openpyxl (>=3.1.5,<4.0.0)"
+]
+
+[project.scripts]
+adoe = "cli.main:app"
+
+[tool.poetry]
+# Flat repository layout (no top-level "adoe" package dir): each engine
+# subsystem is its own top-level package, per docs/ADOE-guide.md section 3.
+packages = [
+    { include = "core" },
+    { include = "engine" },
+    { include = "optimizers" },
+    { include = "plugins" },
+    { include = "cli" },
+    { include = "config" },
+    { include = "gui" },
+]
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[dependency-groups]
+dev = [
+    "pytest (>=9.1.1,<10.0.0)",
+    "ruff (>=0.16.0,<0.17.0)",
+    "black (>=26.5.1,<27.0.0)",
+    "mypy (>=2.3.0,<3.0.0)"
+]
+
+[tool.ruff]
+line-length = 88
+target-version = "py312"
+extend-exclude = ["docs", "benchmarks/datasets"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+
+[tool.black]
+line-length = 88
+target-version = ["py312"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+warn_unused_configs = true
+exclude = ["docs", "benchmarks/datasets"]
+
+[tool.pytest.ini_options]
+markers = [
+    "stress: slow stress test for large streaming workloads (opt-in; run with `pytest --run-stress`)",
+]
+
+[[tool.mypy.overrides]]
+# pyarrow ships no py.typed marker / stubs; without this every import site
+# would need its own ignore comment.
+module = "pyarrow.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+# openpyxl ships no py.typed marker / stubs either (same reason as pyarrow
+# above).
+module = "openpyxl.*"
+ignore_missing_imports = true
