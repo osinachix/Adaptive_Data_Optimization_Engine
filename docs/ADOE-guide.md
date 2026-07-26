@@ -10,29 +10,29 @@ correctness.
 
 ## Contents
 
-**Part I — Foundations**
+**Part I: Foundations**
 1. [Project Overview](#1-project-overview)
 2. [System Architecture](#2-system-architecture)
 3. [Development Environment & Setup](#3-development-environment--setup)
 
-**Part II — The Pipeline**
+**Part II: The Pipeline**
 4. [Data Ingestion](#4-data-ingestion)
 5. [Data Analysis](#5-data-analysis)
 6. [Optimization Engine](#6-optimization-engine)
 
-**Part III — Extension & Delivery**
+**Part III: Extension & Delivery**
 7. [Optimizer Plugins](#7-optimizer-plugins)
 8. [Validation & Export](#8-validation--export)
 9. [Interfaces](#9-interfaces)
 
-**Part IV — Quality & Roadmap**
+**Part IV: Quality & Roadmap**
 10. [Testing & Benchmarking](#10-testing--benchmarking)
 11. [Implementation Roadmap](#11-implementation-roadmap)
 12. [Future Enhancements](#12-future-enhancements)
 
 ---
 
-# Part I — Foundations
+# Part I: Foundations
 
 ## 1. Project Overview
 
@@ -71,11 +71,11 @@ encoded.
 
 ### Architectural principles
 
-- **Streaming first** — process data in chunks, never all at once.
-- **Modular design** — each stage is independently testable.
-- **Explainable optimizations** — every decision is recorded and justifiable.
-- **Extensibility through plugins** — new optimizers require no core changes.
-- **Validation before export** — nothing is written until it is verified.
+- **Streaming first**: process data in chunks, never all at once.
+- **Modular design**: each stage is independently testable.
+- **Explainable optimizations**: every decision is recorded and justifiable.
+- **Extensibility through plugins**: new optimizers require no core changes.
+- **Validation before export**: nothing is written until it is verified.
 
 ### High-level workflow
 
@@ -140,7 +140,7 @@ repository is ready for core-engine implementation.
 
 ---
 
-# Part II — The Pipeline
+# Part II: The Pipeline
 
 ## 4. Data Ingestion
 
@@ -296,7 +296,7 @@ results are written.
 
 ---
 
-# Part III — Extension & Delivery
+# Part III: Extension & Delivery
 
 ## 7. Optimizer Plugins
 
@@ -393,7 +393,7 @@ Users can configure and run the complete workflow through the CLI without editin
 
 ---
 
-# Part IV — Quality & Roadmap
+# Part IV: Quality & Roadmap
 
 ## 10. Testing & Benchmarking
 
@@ -447,7 +447,7 @@ criteria are all satisfied.
 ## 12. Future Enhancements
 
 Beyond a stable version 1.0, ADOE can grow while keeping its architecture modular. The
-web GUI (Streamlit) has already shipped — see section 9 — so it's no longer future
+web GUI (Streamlit) has already shipped (see section 9), so it's no longer future
 work; what remains:
 
 REST API · additional optimizer plugins (boolean, string, sparse, duplicate, datetime -

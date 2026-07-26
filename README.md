@@ -8,19 +8,19 @@ explainable optimizations to cut storage and memory footprint, lossless by defau
 > the summary below is what's actually working right now, not what's intended.
 >
 > - **Engine**: streaming reader for CSV, Parquet, and NDJSON (`.json`/`.jsonl`); a
->   read-only streaming reader for Excel (`.xlsx`, first worksheet only — no Excel
+>   read-only streaming reader for Excel (`.xlsx`, first worksheet only; no Excel
 >   *writer* yet). Streaming profiler, schema analyzer, planner, and a plugin registry.
 >   Two optimizers ship today: `numeric_downcast` and `dictionary_encoding`. Validator
 >   and Zstandard-compressed export (CSV/Parquet/JSON) are both implemented.
 > - **Modes**: `lossless` is fully real (exact reconstruction, enforced by the
 >   validator). `balanced`/`aggressive` are wired through the whole engine but produce
 >   byte-for-byte identical output to `lossless` today, because no shipped optimizer is
->   actually lossy yet — see [Optimization modes](#optimization-modes).
+>   actually lossy yet (see [Optimization modes](#optimization-modes)).
 > - **CLI**: all five commands (`profile`, `optimize`, `validate`, `benchmark`,
 >   `report`) work end to end and are packaged (`adoe` installs as a console script via
 >   Poetry/pipx).
 > - **GUI**: a working Streamlit app (upload, pick mode, optimize, view report,
->   download) — see [Run the web app](#run-the-web-app). Same engine calls as the CLI,
+>   download; see [Run the web app](#run-the-web-app)). Same engine calls as the CLI,
 >   no separate logic.
 > - **Not yet built**: five of the planned optimizers (boolean, string, sparse,
 >   duplicate, datetime), an Excel writer, and a PyPI release.
@@ -39,7 +39,7 @@ files larger than available RAM.
 
 The command-line interface (below) is the primary way to run it, for files on disk and
 scripting. A Streamlit web app (upload a file in the browser, pick a mode, download the
-result) is also available — see [Run the web app](#run-the-web-app).
+result) is also available (see [Run the web app](#run-the-web-app)).
 
 ## Design commitments
 
@@ -81,14 +81,14 @@ Full architecture and per-component detail: [`docs/ADOE-guide.md`](docs/ADOE-gui
   checkout ([pipx.pypa.io](https://pipx.pypa.io/stable/installation/)).
 
 Runtime dependencies (installed automatically by `poetry install`; every one of these
-is required today, including for CLI-only use — there is currently no optional/"GUI
+is required today, including for CLI-only use (there is currently no optional/"GUI
 extras" split, so `streamlit`/`openpyxl` install even if you only ever use the CLI):
 
 | Package | Used for |
 |---|---|
 | `polars` | The dataframe engine: streaming reads, dtype casts, all in-memory data handling |
 | `pyarrow` | Parquet reading/writing (row-group streaming) |
-| `duckdb` | Declared as part of the data-processing stack; **not actually used by any code path yet** — reserved, not dead weight by design, but honestly unused today |
+| `duckdb` | Declared as part of the data-processing stack; **not actually used by any code path yet** (reserved, not dead weight by design, but honestly unused today) |
 | `typer` | The CLI framework |
 | `streamlit` | The web GUI |
 | `openpyxl` | Streaming (read-only) `.xlsx` reading, via its `read_only` row iterator |
@@ -129,7 +129,7 @@ poetry run adoe --help
 
 Two commands, on the one sample file checked into this repo
 ([`examples/sample_orders.csv`](examples/sample_orders.csv): a generated 50,000-row
-order log — order id, customer age, quantity, region, status, unit price).
+order log: order id, customer age, quantity, region, status, unit price).
 
 Profile it first, without changing anything:
 
@@ -161,7 +161,7 @@ Report saved to report.json.
 ```
 
 `order_id`/`customer_age`/`quantity` were downcast to smaller integer types and
-`region`/`status` to dictionary-encoded categoricals — losslessly, confirmed by the
+`region`/`status` to dictionary-encoded categoricals; losslessly, confirmed by the
 validator before anything was written. See [Optimization modes](#optimization-modes) for
 why the two size lines differ, and why they'd differ even more (or barely at all) on a
 different dataset shape.
@@ -218,15 +218,15 @@ below for the exact precedence and format.
 
 The CLI isn't limited to CSV input either, despite every example above using it: `adoe
 profile`/`adoe optimize` accept CSV, Parquet, NDJSON (`.json`/`.jsonl`), or Excel
-(`.xlsx`) directly, the same formats the GUI accepts — e.g. `adoe profile
-data.parquet` or `adoe profile data.xlsx` work exactly like `adoe profile data.csv`.
+(`.xlsx`) directly, the same formats the GUI accepts (e.g. `adoe profile
+data.parquet` or `adoe profile data.xlsx` work exactly like `adoe profile data.csv`).
 One asymmetry to know about: there's no Excel *writer*, so `adoe optimize input.xlsx
---out output.xlsx` fails with "cannot infer export format" — point `--out` at
+--out output.xlsx` fails with "cannot infer export format"; point `--out` at
 `.csv`/`.parquet`/`.json` instead when the input is Excel.
 
 ## Configuration
 
-Three sources, resolved in this order (highest priority first) — an explicit CLI flag
+Three sources, resolved in this order (highest priority first); an explicit CLI flag
 always wins, an omitted flag falls through:
 
 1. **CLI flags** you actually pass (e.g. `--mode balanced`).
@@ -240,7 +240,7 @@ always wins, an omitted flag falls through:
    ```
 4. Built-in defaults (`lossless`, `10000`, `INFO`) if nothing else is set.
 
-All three fields are optional in `adoe.toml`/the environment — set only the ones you
+All three fields are optional in `adoe.toml`/the environment; set only the ones you
 want to override. This precedence is verified directly in
 [`tests/test_settings.py`](tests/test_settings.py), not just described here.
 
@@ -265,7 +265,7 @@ optimized and offered back as Parquet instead, with a note in the UI explaining 
 The GUI is a second door into the same engine the CLI uses, not a separate
 implementation: it calls `run_profile`/`run_optimize` from `engine/pipeline.py`
 directly and contains no profiling, optimization, or validation logic of its own (see
-invariant I6 in [`CLAUDE.md`](CLAUDE.md)) — so a result optimized through the browser is
+invariant I6 in [`CLAUDE.md`](CLAUDE.md)), so a result optimized through the browser is
 identical to the same file run through `adoe optimize`.
 
 ---
@@ -278,10 +278,10 @@ has more, each built to exercise something specific:
 
 | File | Purpose |
 |---|---|
-| `core_dataset.csv` / `.jsonl` / `.parquet` | The same 2,000-row dataset in three formats — try `adoe profile` on each to compare how format affects what's detectable (e.g. NDJSON round-trips `signup_at` as a string; Parquet keeps it as a real datetime) |
-| `already_optimal.csv` | Nothing here should show meaningful savings — confirms the planner doesn't force a change just to report one |
+| `core_dataset.csv` / `.jsonl` / `.parquet` | The same 2,000-row dataset in three formats; try `adoe profile` on each to compare how format affects what's detectable (e.g. NDJSON round-trips `signup_at` as a string, while Parquet keeps it as a real datetime) |
+| `already_optimal.csv` | Nothing here should show meaningful savings; confirms the planner doesn't force a change just to report one |
 | `wide_table.csv` | Many columns, a mix of optimizable and not |
-| `missing_and_malformed.csv` | A ragged row (wrong field count) — confirms `adoe profile`/`optimize` fail with a clear, actionable error instead of a raw traceback |
+| `missing_and_malformed.csv` | A ragged row (wrong field count); confirms `adoe profile`/`optimize` fail with a clear, actionable error instead of a raw traceback |
 
 Regenerate all of them deterministically (fixed random seeds, byte-identical output
 every run):
@@ -291,7 +291,7 @@ poetry run python examples/make_samples.py
 ```
 
 `examples/real_data.csv` and its derived `real_data_optimized*` files, if present in
-your working copy, are **not** part of this repository (excluded via `.gitignore`) —
+your working copy, are **not** part of this repository (excluded via `.gitignore`):
 they're a real-world dataset a user of this project downloaded separately for testing
 at real scale (~200MB, exceeds GitHub's 100MB file limit anyway). A fresh clone won't
 have them; supply your own large CSV/Parquet/JSON/Excel file at that path to reproduce
@@ -311,7 +311,7 @@ The mode is threaded all the way through today (it changes how strictly the vali
 checks reconstruction). What it doesn't yet change is the optimization plan itself: both
 shipped optimizers (`numeric_downcast`, `dictionary_encoding`) are unconditionally
 lossless, so `balanced` and `aggressive` currently produce byte-for-byte identical output
-to `lossless` — verified above. They'll diverge once a genuinely lossy optimizer ships.
+to `lossless` (verified above). They'll diverge once a genuinely lossy optimizer ships.
 
 ---
 
