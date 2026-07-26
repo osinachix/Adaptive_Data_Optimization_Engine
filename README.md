@@ -376,6 +376,15 @@ New optimizers are added as plugins without modifying the core engine. See the
 optimizer must be deterministic, streaming-compatible where possible, and shipped with
 unit tests.
 
+## Disclaimer
+
+ADOE is pre-1.0, actively-developed software (see the status block at the top of this
+file for exactly what's implemented today). It is provided as-is, with no warranty of
+any kind, express or implied, per the MIT license below. Lossless mode is validated
+before every export (invariant I3), but no software is bug-free: keep a backup of your
+original data before relying on this for anything critical, and review the execution
+report before trusting an output file in production.
+
 ## License
 
 MIT.
